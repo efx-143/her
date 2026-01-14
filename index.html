@@ -86,9 +86,8 @@
             cursor: pointer;
             width: 100%;
             max-width: 250px;
-            /* CRITICAL FIX: Only animate properties that don't affect layout size */
-            transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-                        top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+            transition: left 0.2s ease-out, 
+                        top 0.2s ease-out, 
                         background-color 0.2s, 
                         transform 0.2s;
             position: relative;
@@ -112,7 +111,7 @@
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            white-space: nowrap;
+            white-space: nowrap; /* Prevents button height change on text change */
         }
 
         /* Success Overlay */
@@ -189,7 +188,7 @@
         window.onload = typeWriter;
 
 
-        // --- 2. The Mobile-Proof Runaway Button ---
+        // --- 2. The Fixed Runaway Button Logic ---
         const noBtn = document.getElementById('runaway-btn');
         
         const texts = [
@@ -206,40 +205,45 @@
         function moveButton(e) {
             if(e) e.preventDefault(); 
 
-            // 1. FREEZE WIDTH & SET FIXED IMMEDIATELY
-            // This prevents the button from changing size *after* we measure it.
-            // We switch to fixed positioning NOW so measurements are accurate to the viewport context.
+            // 1. Force Fixed Position Immediately
             if (noBtn.style.position !== 'fixed') {
                 noBtn.style.position = 'fixed';
-                // Reset width to auto so it wraps tightly around text, not 100% of viewport
-                noBtn.style.width = 'auto'; 
+                noBtn.style.width = 'auto'; // Shrink to fit text
             }
 
-            // 2. UPDATE CONTENT
+            // 2. Change Text
             const randomText = texts[Math.floor(Math.random() * texts.length)];
             noBtn.innerText = randomText;
             noBtn.style.borderColor = '#ff4d6d';
             noBtn.style.color = '#ff4d6d';
             
-            // 3. MEASURE (Now accurate because width transition is off and position is already fixed)
-            const viewportWidth = document.documentElement.clientWidth;
-            const viewportHeight = document.documentElement.clientHeight;
-            const btnRect = noBtn.getBoundingClientRect();
-            const btnWidth = btnRect.width;
-            const btnHeight = btnRect.height;
+            // 3. Get Dimensions (Viewport vs Button)
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
             
-            // 4. CALCULATE SAFE BOUNDARIES
-            // Increased padding to 30px to be super safe
-            const padding = 30;
-            const maxX = viewportWidth - btnWidth - padding;
-            const maxY = viewportHeight - btnHeight - padding;
+            // Measure button AFTER text change to get accurate width
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            
+            // 4. Safe Boundaries
+            // Padding from the edge of the screen
+            const padding = 20; 
 
-            // 5. CLAMP COORDINATES
-            // Ensure we never generate a number less than padding or greater than max
-            const randomX = Math.max(padding, Math.random() * maxX);
-            const randomY = Math.max(padding, Math.random() * maxY);
+            // Calculate the absolute maximum X and Y allowed
+            const maxAllowedX = viewportWidth - btnWidth - padding;
+            const maxAllowedY = viewportHeight - btnHeight - padding;
 
-            // 6. APPLY
+            // Generate Random Coordinates
+            let randomX = Math.random() * maxAllowedX;
+            let randomY = Math.random() * maxAllowedY;
+
+            // 5. STRICT CLAMPING (The Fix)
+            // Ensure X is at least 'padding' and at most 'maxAllowedX'
+            // This prevents it from ever being < 0 or > screen width
+            randomX = Math.max(padding, Math.min(randomX, maxAllowedX));
+            randomY = Math.max(padding, Math.min(randomY, maxAllowedY));
+
+            // 6. Apply
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
         }
