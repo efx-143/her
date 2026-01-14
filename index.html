@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Update: Apology.exe</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+
+        :root {
+            --primary: #ff4d6d;
+            --bg: #0f0f1a;
+            --text: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #2e2e50 0%, #0f0f1a 100%);
+            touch-action: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 40px rgba(255, 77, 109, 0.2);
+            width: 85%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .typewriter {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 20px 0 30px 0;
+            min-height: 90px;
+            color: #d1d1d1;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            position: relative;
+            min-height: 120px;
+        }
+
+        button {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            max-width: 250px;
+            /* CRITICAL FIX: Only animate properties that don't affect layout size */
+            transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        background-color 0.2s, 
+                        transform 0.2s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-yes {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 77, 109, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
+        }
+
+        .btn-no {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+
+        /* Success Overlay */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 26, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+
+        .success-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-overlay h2 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .success-overlay p {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Error: <span class="highlight">Late Reply</span></h1>
+        
+        <div class="typewriter" id="text-target"></div>
+
+        <div class="buttons">
+            <button class="btn-yes" onclick="forgiveMe()">Forgive Him ❤️</button>
+            <button class="btn-no" id="runaway-btn">Make him suffer 😈</button>
+        </div>
+    </div>
+
+    <div class="success-overlay" id="success">
+        <i class="fas fa-heart" style="font-size: 50px; color: #ff4d6d; margin-bottom: 20px;"></i>
+        <h2>Finally you forgive ME!!</h2>
+        <p>thank you soo much Ananya.😋</p>
+        <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 20px;">😁😁</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // --- 1. The Typing Text ---
+        const text = "A fatal error occurred: I was replying to you, but I got lost in your eyes (via photo) and time stopped.\n\nPlease select an option to restore the universe.";
+        const target = document.getElementById('text-target');
+        let index = 0;
+
+        function typeWriter() {
+            if (index < text.length) {
+                target.innerHTML += text.charAt(index) === '\n' ? '<br>' : text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 40);
+            }
+        }
+        window.onload = typeWriter;
+
+
+        // --- 2. The Mobile-Proof Runaway Button ---
+        const noBtn = document.getElementById('runaway-btn');
+        
+        const texts = [
+            "Nice try!", 
+            "Too slow!", 
+            "Can't catch me!", 
+            "I'm innocent!", 
+            "Missed!", 
+            "Just click Yes!",
+            "Nope!",
+            "So close!"
+        ];
+
+        function moveButton(e) {
+            if(e) e.preventDefault(); 
+
+            // 1. FREEZE WIDTH & SET FIXED IMMEDIATELY
+            // This prevents the button from changing size *after* we measure it.
+            // We switch to fixed positioning NOW so measurements are accurate to the viewport context.
+            if (noBtn.style.position !== 'fixed') {
+                noBtn.style.position = 'fixed';
+                // Reset width to auto so it wraps tightly around text, not 100% of viewport
+                noBtn.style.width = 'auto'; 
+            }
+
+            // 2. UPDATE CONTENT
+            const randomText = texts[Math.floor(Math.random() * texts.length)];
+            noBtn.innerText = randomText;
+            noBtn.style.borderColor = '#ff4d6d';
+            noBtn.style.color = '#ff4d6d';
+            
+            // 3. MEASURE (Now accurate because width transition is off and position is already fixed)
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnWidth = btnRect.width;
+            const btnHeight = btnRect.height;
+            
+            // 4. CALCULATE SAFE BOUNDARIES
+            // Increased padding to 30px to be super safe
+            const padding = 30;
+            const maxX = viewportWidth - btnWidth - padding;
+            const maxY = viewportHeight - btnHeight - padding;
+
+            // 5. CLAMP COORDINATES
+            // Ensure we never generate a number less than padding or greater than max
+            const randomX = Math.max(padding, Math.random() * maxX);
+            const randomY = Math.max(padding, Math.random() * maxY);
+
+            // 6. APPLY
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('touchstart', moveButton); 
+        noBtn.addEventListener('click', moveButton);
+
+
+        // --- 3. Success Animation ---
+        function forgiveMe() {
+            document.getElementById('success').classList.add('active');
+            
+            const end = Date.now() + 3000;
+            const colors = ['#ff4d6d', '#ff8fa3', '#ffffff'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+</body>
+</html>
