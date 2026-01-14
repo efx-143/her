@@ -35,7 +35,7 @@
         }
 
         .container {
-            position: relative;
+            position: relative; /* Anchor point for the button */
             z-index: 10;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px);
@@ -46,6 +46,7 @@
             width: 85%;
             max-width: 380px;
             text-align: center;
+            overflow: hidden; /* STRICTLY cuts off anything outside */
         }
 
         h1 {
@@ -72,7 +73,8 @@
             flex-direction: column;
             gap: 15px;
             align-items: center;
-            position: relative;
+            /* CRITICAL FIX: Changed from relative to static so absolute children ignore this div */
+            position: static; 
             min-height: 120px;
         }
 
@@ -86,10 +88,9 @@
             cursor: pointer;
             width: 100%;
             max-width: 250px;
-            transition: left 0.2s ease-out, 
-                        top 0.2s ease-out, 
-                        background-color 0.2s, 
-                        transform 0.2s;
+            transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        background-color 0.2s;
             position: relative;
             z-index: 2;
         }
@@ -111,7 +112,7 @@
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            white-space: nowrap; /* Prevents button height change on text change */
+            white-space: nowrap;
         }
 
         /* Success Overlay */
@@ -152,7 +153,7 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="main-container">
         <h1>Error: <span class="highlight">Late Reply</span></h1>
         
         <div class="typewriter" id="text-target"></div>
@@ -188,8 +189,9 @@
         window.onload = typeWriter;
 
 
-        // --- 2. The Fixed Runaway Button Logic ---
+        // --- 2. The Logic to stay INSIDE the box ---
         const noBtn = document.getElementById('runaway-btn');
+        const container = document.getElementById('main-container');
         
         const texts = [
             "Nice try!", 
@@ -205,10 +207,11 @@
         function moveButton(e) {
             if(e) e.preventDefault(); 
 
-            // 1. Force Fixed Position Immediately
-            if (noBtn.style.position !== 'fixed') {
-                noBtn.style.position = 'fixed';
-                noBtn.style.width = 'auto'; // Shrink to fit text
+            // 1. Set Absolute Position
+            // Since .buttons is 'static', this positions relative to .container
+            if (noBtn.style.position !== 'absolute') {
+                noBtn.style.position = 'absolute';
+                noBtn.style.width = 'auto'; 
             }
 
             // 2. Change Text
@@ -217,31 +220,20 @@
             noBtn.style.borderColor = '#ff4d6d';
             noBtn.style.color = '#ff4d6d';
             
-            // 3. Get Dimensions (Viewport vs Button)
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
+            // 3. Measure Container & Button
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
             
-            // Measure button AFTER text change to get accurate width
-            const btnWidth = noBtn.offsetWidth;
-            const btnHeight = noBtn.offsetHeight;
-            
-            // 4. Safe Boundaries
-            // Padding from the edge of the screen
-            const padding = 20; 
+            // 4. Calculate Max Boundaries
+            // We use the dimensions of the CONTAINER directly.
+            const padding = 20;
+            const maxLeft = containerRect.width - btnRect.width - padding;
+            const maxTop = containerRect.height - btnRect.height - padding;
 
-            // Calculate the absolute maximum X and Y allowed
-            const maxAllowedX = viewportWidth - btnWidth - padding;
-            const maxAllowedY = viewportHeight - btnHeight - padding;
-
-            // Generate Random Coordinates
-            let randomX = Math.random() * maxAllowedX;
-            let randomY = Math.random() * maxAllowedY;
-
-            // 5. STRICT CLAMPING (The Fix)
-            // Ensure X is at least 'padding' and at most 'maxAllowedX'
-            // This prevents it from ever being < 0 or > screen width
-            randomX = Math.max(padding, Math.min(randomX, maxAllowedX));
-            randomY = Math.max(padding, Math.min(randomY, maxAllowedY));
+            // 5. Generate Random Position
+            // Since we are strictly inside the container now, 0 is the top-left corner of the card.
+            const randomX = Math.max(padding, Math.random() * maxLeft);
+            const randomY = Math.max(padding, Math.random() * maxTop);
 
             // 6. Apply
             noBtn.style.left = randomX + 'px';
